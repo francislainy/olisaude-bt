@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Builder
 @NoArgsConstructor
@@ -14,6 +15,7 @@ import java.time.LocalDate;
 @Data
 public class AppClient {
 
+    private UUID id;
     private String name;
     private LocalDate birthDate;
     private Gender gender;
