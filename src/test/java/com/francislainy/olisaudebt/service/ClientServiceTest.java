@@ -1,26 +1,35 @@
 package com.francislainy.olisaudebt.service;
 
+import com.francislainy.olisaudebt.entity.AppClientEntity;
 import com.francislainy.olisaudebt.model.AppClient;
 import com.francislainy.olisaudebt.model.HealthIssue;
+import com.francislainy.olisaudebt.repository.ClientRepository;
 import com.francislainy.olisaudebt.service.impl.ClientServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.francislainy.olisaudebt.enums.Gender.FEMALE;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ClientServiceTest {
 
     @InjectMocks
     ClientServiceImpl clientService;
+
+    @Mock
+    ClientRepository clientRepository;
 
     @Test
     void shouldCreateClient() {
@@ -33,6 +42,9 @@ public class ClientServiceTest {
                 .updatedAt(LocalDate.now())
                 .build();
 
+        AppClientEntity appClientEntity = appClient.toEntity().withId(randomUUID());
+
+        when(clientRepository.save(any())).thenReturn(appClientEntity);
         AppClient result = clientService.createClient(appClient);
 
         assertNotNull(result);
@@ -46,6 +58,8 @@ public class ClientServiceTest {
                 () -> assertEquals(result.getCreatedAt(), appClient.getCreatedAt()),
                 () -> assertEquals(result.getUpdatedAt(), appClient.getUpdatedAt())
         );
+
+        verify(clientRepository, times(1)).save(any());
     }
 
     @Test
@@ -60,6 +74,7 @@ public class ClientServiceTest {
                 .updatedAt(LocalDate.now())
                 .build();
 
+        when(clientRepository.findById(any())).thenReturn(Optional.of(appClient.toEntity()));
         AppClient result = clientService.retrieveClient(appClient.getId());
 
         assertNotNull(result);
@@ -73,13 +88,15 @@ public class ClientServiceTest {
                 () -> assertEquals(result.getCreatedAt(), appClient.getCreatedAt()),
                 () -> assertEquals(result.getUpdatedAt(), appClient.getUpdatedAt())
         );
+
+        verify(clientRepository, times(1)).findById(any());
     }
 
     @Test
     void shouldRetrieveAllClients() {
         UUID clientId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 
-        AppClient appClient = AppClient.builder()
+        AppClientEntity appClient = AppClientEntity.builder()
                 .id(clientId)
                 .name("anyName")
                 .birthDate(LocalDate.now())
@@ -89,8 +106,9 @@ public class ClientServiceTest {
                 .updatedAt(LocalDate.now())
                 .build();
 
-        List<AppClient> appClientList = List.of(appClient);
+        List<AppClientEntity> appClientList = List.of(appClient);
 
+        when(clientRepository.findAll()).thenReturn(appClientList);
         List<AppClient> result = clientService.retrieveAllClients();
 
         assertFalse(result.isEmpty());
@@ -105,13 +123,14 @@ public class ClientServiceTest {
                 () -> assertEquals(result.get(0).getCreatedAt(), appClientList.get(0).getCreatedAt()),
                 () -> assertEquals(result.get(0).getUpdatedAt(), appClientList.get(0).getUpdatedAt())
         );
-    }
 
+        verify(clientRepository, times(1)).findAll();
+    }
 
     @Test
     void shouldUpdateClient() {
+        UUID clientId = randomUUID();
         AppClient appClient = AppClient.builder()
-                .id(randomUUID())
                 .name("anyName")
                 .birthDate(LocalDate.now())
                 .gender(FEMALE)
@@ -120,7 +139,8 @@ public class ClientServiceTest {
                 .updatedAt(LocalDate.now())
                 .build();
 
-        AppClient result = clientService.updateClient(appClient.getId(), appClient);
+        when(clientRepository.save(any())).thenReturn(appClient.toEntity().withId(clientId));
+        AppClient result = clientService.updateClient(clientId, appClient);
 
         assertNotNull(result);
 
@@ -133,5 +153,7 @@ public class ClientServiceTest {
                 () -> assertEquals(result.getCreatedAt(), appClient.getCreatedAt()),
                 () -> assertEquals(result.getUpdatedAt(), appClient.getUpdatedAt())
         );
+
+        verify(clientRepository, times(1)).save(any());
     }
 }
