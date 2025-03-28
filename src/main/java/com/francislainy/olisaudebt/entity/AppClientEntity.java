@@ -17,7 +17,7 @@ import java.util.UUID;
 @Data
 @With
 public class AppClientEntity {
-    @Generated
+    @GeneratedValue
     @Id
     private UUID id;
     private String name;
