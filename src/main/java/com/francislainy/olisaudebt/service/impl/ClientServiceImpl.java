@@ -7,6 +7,7 @@ import com.francislainy.olisaudebt.service.ClientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ public class ClientServiceImpl implements ClientService {
     @Override
     public AppClient createClient(AppClient appClient) {
         AppClientEntity appClientEntity = clientRepository.save(appClient.toEntity());
+        appClientEntity.setCreatedAt(LocalDate.now());
         return appClientEntity.toModel();
     }
 
@@ -26,7 +28,7 @@ public class ClientServiceImpl implements ClientService {
     public AppClient retrieveClient(UUID clientId) {
         return clientRepository.findById(clientId)
                 .map(AppClientEntity::toModel)
-                .orElse(null); // test negative and throw exception when not found
+                .orElse(null); // todo: test negative and throw exception when not found
     }
 
     @Override
